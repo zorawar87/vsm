@@ -56,4 +56,14 @@ into the `code` section (bits `0 - 1023`) and `data` section
   * all temporary data (variables) must be stored in the `data` section.
 
 ## Part II: The VSM Simulator ##
-Create a software model of the VSM.
+Create a software model of the VSM that can run, test, and debug VSML Programs.
+
+Let `vsm.c` represent the simulator. At the end of the simulation, 
+display a computer dump i.e., display the contents of memory and registers.
+
+### Registers
+  * accumulator
+  * instructionCounter :: 
+  * instructionRegister
+  * opCode
+  * operand
