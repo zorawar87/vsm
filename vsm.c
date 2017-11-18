@@ -32,17 +32,15 @@ bit_2:2
  */
 typedef uint8_t   byte; // 08 bit integer
 typedef uint16_t  word; // 16 bit integer
-typedef uint32_t dword; // 32 bit integer
 
 /*
  * Initialise registers
  */
 static word accumulator;
 static word instructionCounter;
-static dword instructionRegister; // TODO: change to word
-//static nibble opCode;
+static word instructionRegister;
 static word opCode;
-static word operand;
+static [2]word operand;
 
 
 /*
@@ -52,7 +50,7 @@ static word operand;
  *   * Here, memory is an aggregate of (2048*8/16==2048>>1) words
  * * Memory contains 1024 bits for CODE and DATA each.
  */
-static dword memory[2048 >> 1]; // TODO: change to word
+static word memory[2048 >> 1]; // TODO: change to word
 
 int loadProgramIntoMemory();
 int executeInstruction();
