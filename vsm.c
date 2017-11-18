@@ -112,18 +112,7 @@ int decode(){
 }
 
 void execute() {
-  instructionRegister = memory[instructionCounter];
-  //instruction_t.op_code = instructionRegister;
-  //printf("%x\n\n",(nibble)instruction_t.op_code);
-  // get 
-  decode();
-  printf("m: %x\n",m);
-  printf("OPCODE: %x\n",opCode);
-  printf("OP%x\n",operand);
   switch (opCode){
-    case EOC:
-      printf("%s\n","EOC");
-      break;
     case LOAD:
       printf("%s\n","Load");
       if(m)
@@ -160,6 +149,4 @@ void execute() {
       break;
     default: exit(EXIT_FAILURE);
   }
-  instructionCounter++;
-
 }
