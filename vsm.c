@@ -32,7 +32,7 @@ bit_2:2
  */
 typedef uint8_t   byte; // 08 bit integer
 typedef uint16_t  word; // 16 bit integer
-typedef uint32_t dword; // 16 bit integer
+typedef uint32_t dword; // 32 bit integer
 
 /*
  * Initialise registers
