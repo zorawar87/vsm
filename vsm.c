@@ -51,6 +51,9 @@ int loadProgramIntoMemory();
 void fetch();
 int decode();
 void execute();
+/* Helpers */
+word getRealOperand();
+int isValidDataAddress();
 
 void main() {
   if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
@@ -79,11 +82,6 @@ int loadProgramIntoMemory() {
   /* If only one instruction was loaded, exit */
   if (instructionCounter<2) return 0;
 
-  /* Start adding data to data region */
-  instructionCounter = 1024;
-  while (scanf ("%04x", &instructionRegister) != EOF)
-    memory[instructionCounter++] = instructionRegister;
-
   accumulator = 0;
   instructionCounter = 0;
   instructionRegister = 0;
@@ -108,37 +106,47 @@ int decode() {
   return 1;
 }
 
+void read(){
+  if (!isValidDataAddress(operand)) return;
+  word input;
+  if (scanf ("%04x", &input) !=1 ) return;
+  memory[operand] = input;
+  printf("\t\tmemory[%d]: %d\n", operand, memory[operand]);
+}
+
 void execute() {
   switch (opCode) {
     case LOAD:
       printf ("%s\n", "Load");
+      accumulator = getRealOperand();
       break;
     case STORE:
       printf ("%s\n", "Store");
       break;
     case READ:
       printf ("%s\n", "READ");
+      read();
       break;
     case WRITE:
       printf ("%s\n", "Write");
       break;
     case ADD:
-      printf ("%s\n", "Add");
+      accumulator += getRealOperand();
       break;
     case SUB:
-      printf ("%s\n", "Sub");
+      accumulator -= getRealOperand();
       break;
     case MUL:
-      printf ("%s\n", "mul");
+      accumulator *= getRealOperand();
       break;
     case DIV:
-      printf ("%s\n", "div");
+      accumulator /= getRealOperand();
       break;
     case MOD:
-      printf ("%s\n", "mod");
+      accumulator %= getRealOperand();
       break;
     case NEG:
-      printf ("%s\n", "neg");
+      accumulator *= -1;
       break;
     case NOP:
       printf ("%s\n", "nop");
@@ -156,3 +164,18 @@ void execute() {
   }
 }
 
+word getRealOperand(){
+  // if operand is not a value (i.e. is an address),
+  // try to fetch the value at the address
+  if (!m) {
+    if (!isValidDataAddress(operand)) return;
+    return memory[operand];
+  }
+  return operand;
+}
+
+int isValidDataAddress(){
+  // not a valid address if beyond 2038 or below 1024
+  if (operand < 1024 || operand > 2038) return 0;
+  return 1;
+}
