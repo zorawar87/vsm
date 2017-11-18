@@ -25,8 +25,8 @@
 /*
 * Create aliases for relevant types
  */
-typedef uint8_t   byte; // 08 bit integer
-typedef uint16_t  word; // 16 bit integer
+typedef uint8_t  byte; // 08 bit integer
+typedef uint16_t word; // 16 bit integer
 
 /*
  * Initialise registers
@@ -38,7 +38,6 @@ static word opCode;
 static word operand;
 static word m;
 
-
 /*
  * Allocate Memory
  * * VSM supports a memory system comprised of 2,048 bytes
@@ -48,48 +47,42 @@ static word m;
  */
 word memory[2048] = {0};
 
-
-
-
 int loadProgramIntoMemory();
-void execute();
-int decode();
 void fetch();
+int decode();
+void execute();
 
 void main() {
-  printf("test");
-
   if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
-  int isExecutable;
+  int isExecutable=0;
   do {
-
     fetch();
     isExecutable = decode();
     if (isExecutable) execute();
-  }while (isExecutable);
+  } while (isExecutable);
 }
 
 /*
  * Scans program from stdin and loads it into memory
  * Return 1 if any instructions were loaded; 0 otherwise
- * Responsibilities of a loader:
- *  ? validation (permissions, memory requirements etc.)
- *  * copying the program image from the disk (stdin) into main memory
- *  - XXX copying the command-line arguments on the stack XXX
- *  * initializing registers (e.g., the stack pointer)
- *  ? ??? jumping to the program entry point (_start) ???
+ * Responsibilities of a loader: (source: wikipedia)
+ *  [ ] validation (permissions, memory requirements etc.)
+ *  [X] copying the program image from the disk (stdin) into main memory
+ *  [X] initializing registers (e.g., the stack pointer)
  */
 int loadProgramIntoMemory() {
   instructionCounter = 0;
-  printf("test");
-  while (scanf ("%04x", &instructionRegister) != EOF){
-     printf("%04x",instructionRegister);
-     memory[instructionCounter++] = instructionRegister;
-     if(instructionRegister == EOC)
-       break;
+  while (scanf ("%04x", &instructionRegister) != EOF) {
+    memory[instructionCounter++] = instructionRegister;
+    if (instructionRegister == EOC) break;
   }
-  /* Quit if nothing was loaded */
-  if (!instructionCounter) return 0;
+  /* If only one instruction was loaded, exit */
+  if (instructionCounter<2) return 0;
+
+  /* Start adding data to data region */
+  instructionCounter = 1024;
+  while (scanf ("%04x", &instructionRegister) != EOF)
+    memory[instructionCounter++] = instructionRegister;
 
   accumulator = 0;
   instructionCounter = 0;
@@ -99,54 +92,67 @@ int loadProgramIntoMemory() {
   return 1;
 }
 
-void fetch(){
+void fetch() {
   instructionRegister = memory[instructionCounter++];
 }
 
-int decode(){
+
+int decode() {
   opCode = instructionRegister >> 12;
+  if (opCode == HALT || opCode == EOC) {
+    printf("stopped decoding at %d\n", opCode);
+    return 0;
+  }
   m = instructionRegister & 0x0800;
   operand = instructionRegister & 0x07ff;
-  if (opCode == HALT) return 0;
   return 1;
 }
 
 void execute() {
-  switch (opCode){
+  switch (opCode) {
     case LOAD:
-      printf("%s\n","Load");
-      if(m)
-	accumulator = operand;
-      else
-	accumulator = memory[operand];
+      printf ("%s\n", "Load");
       break;
     case STORE:
-      printf("%s\n","Load");
+      printf ("%s\n", "Store");
       break;
     case READ:
+      printf ("%s\n", "READ");
       break;
     case WRITE:
+      printf ("%s\n", "Write");
       break;
     case ADD:
+      printf ("%s\n", "Add");
       break;
     case SUB:
+      printf ("%s\n", "Sub");
       break;
     case MUL:
+      printf ("%s\n", "mul");
       break;
     case DIV:
+      printf ("%s\n", "div");
       break;
     case MOD:
+      printf ("%s\n", "mod");
       break;
     case NEG:
+      printf ("%s\n", "neg");
       break;
     case NOP:
+      printf ("%s\n", "nop");
       break;
     case JUMP:
+      printf ("%s\n", "j");
       break;
     case JNEG:
+      printf ("%s\n", "jneg");
       break;
     case JZERO:
+      printf ("%s\n", "jzero");
       break;
-    default: exit(EXIT_FAILURE);
+    default: printf("EXITING: unknown opcode %d\n",opCode);exit (EXIT_FAILURE);
   }
 }
+
