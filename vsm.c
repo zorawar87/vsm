@@ -99,6 +99,10 @@ int loadProgramIntoMemory() {
   return 1;
 }
 
+void fetch(){
+  instructionRegister = memory[instructionCounter++];
+}
+
 int decode(){
   opCode = instructionRegister >> 12;
   m = instructionRegister & 0x0800;
