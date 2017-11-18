@@ -91,14 +91,15 @@ int loadProgramIntoMemory() {
 }
 
 void fetch() {
-  instructionRegister = memory[instructionCounter++];
+  instructionRegister = memory[instructionCounter];
+  instructionCounter +=2;
 }
 
 
 int decode() {
   opCode = instructionRegister >> 12;
   if (opCode == HALT || opCode == EOC) {
-    printf("stopped decoding at %d\n", opCode);
+    printf("stopped decoding at %d\n", instructionCounter);
     return 0;
   }
   m = instructionRegister & 0x0800;
@@ -114,21 +115,30 @@ void read(){
   printf("\t\tmemory[%d]: %d\n", operand, memory[operand]);
 }
 
+void write(){
+  printf("WRITIGN\n");
+  if (!isValidDataAddress(operand)) return;
+  printf("%d\n", memory[operand]);
+}
+
+void store(){
+  if (!isValidDataAddress(operand)) return;
+  memory[operand] = accumulator;
+}
+
 void execute() {
   switch (opCode) {
     case LOAD:
-      printf ("%s\n", "Load");
       accumulator = getRealOperand();
       break;
     case STORE:
-      printf ("%s\n", "Store");
+      store();
       break;
     case READ:
-      printf ("%s\n", "READ");
       read();
       break;
     case WRITE:
-      printf ("%s\n", "Write");
+      write();
       break;
     case ADD:
       accumulator += getRealOperand();
@@ -149,16 +159,16 @@ void execute() {
       accumulator *= -1;
       break;
     case NOP:
-      printf ("%s\n", "nop");
+      accumulator = accumulator;
       break;
     case JUMP:
-      printf ("%s\n", "j");
+      instructionCounter = operand;
       break;
     case JNEG:
-      printf ("%s\n", "jneg");
+      if (accumulator < 0) instructionCounter = operand;
       break;
     case JZERO:
-      printf ("%s\n", "jzero");
+      if (accumulator == 0) instructionCounter = operand;
       break;
     default: printf("EXITING: unknown opcode %d\n",opCode);exit (EXIT_FAILURE);
   }
