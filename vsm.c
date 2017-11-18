@@ -45,7 +45,7 @@ static [2]word operand;
  *   * Here, memory is an aggregate of (2048*8/16==2048>>1) words
  * * Memory contains 1024 bits for CODE and DATA each.
  */
-static word memory[2048 >> 1]; // TODO: change to word
+static word memory[2048 >> 1];
 
 int loadProgramIntoMemory();
 int executeInstruction();
@@ -67,15 +67,8 @@ void main() {
  */
 int loadProgramIntoMemory() {
   instructionCounter = 0;
-  while (scanf ("%04x", &instructionRegister) != EOF){
+  while (scanf ("%04x", &instructionRegister) != EOC)
     memory[instructionCounter++] = instructionRegister;
-  }
-  /*
-  instructionCounter = 0;
-  while (instructionCounter <8){
-    printf("%x\n",memory[instructionCounter++]);
-  }
-  */
 
   /* Quit if nothing was loaded */
   if (!instructionCounter) return 0;
