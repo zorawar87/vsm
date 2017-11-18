@@ -35,7 +35,7 @@ static word accumulator;
 static word instructionCounter;
 static word instructionRegister;
 static word opCode;
-static [2]word operand;
+static word operand;
 
 
 /*
@@ -45,14 +45,18 @@ static [2]word operand;
  *   * Here, memory is an aggregate of (2048*8/16==2048>>1) words
  * * Memory contains 1024 bits for CODE and DATA each.
  */
-static word memory[2048 >> 1];
+struct {
+  word code[2048>>1];
+  word data[2048>>1];
+} memory;
+
 
 int loadProgramIntoMemory();
 int executeInstruction();
 
 void main() {
-  //if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
-  //while (executeInstruction());
+  if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
+  while (executeInstruction());
 }
 
 /*
@@ -68,7 +72,7 @@ void main() {
 int loadProgramIntoMemory() {
   instructionCounter = 0;
   while (scanf ("%04x", &instructionRegister) != EOC)
-    memory[instructionCounter++] = instructionRegister;
+    memory.code[instructionCounter++] = instructionRegister;
 
   /* Quit if nothing was loaded */
   if (!instructionCounter) return 0;
@@ -82,13 +86,12 @@ int loadProgramIntoMemory() {
 }
 
 int executeInstruction() {
-  instructionRegister = memory[instructionCounter];
+  instructionRegister = memory.code[instructionCounter];
   //instruction_t.op_code = instructionRegister;
   //printf("%x\n\n",(nibble)instruction_t.op_code);
   // get 
   opCode = instructionRegister >> 12;
   printf("OPCODE: %x\n",opCode);
-   n1 = instructionRegister;
   operand = instructionRegister % 100000;
   printf("OP%x\n",operand);
   switch (opCode){
