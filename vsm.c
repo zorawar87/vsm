@@ -46,19 +46,27 @@ static word m;
  *   * Here, memory is an aggregate of (2048*8/16==2048>>1) words
  * * Memory contains 1024 bits for CODE and DATA each.
  */
-word code[2048>>1] = {0};
-word data[2048>>1] = {0};
+word memory[2048] = {0};
+
 
 
 
 int loadProgramIntoMemory();
-int executeInstruction();
+void execute();
+int decode();
+void fetch();
 
 void main() {
   printf("test");
 
   if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
-  //while (executeInstruction());
+  int isExecutable;
+  do {
+
+    fetch();
+    isExecutable = decode();
+    if (isExecutable) execute();
+  }while (isExecutable);
 }
 
 /*
@@ -76,7 +84,7 @@ int loadProgramIntoMemory() {
   printf("test");
   while (scanf ("%04x", &instructionRegister) != EOF){
      printf("%04x",instructionRegister);
-     code[instructionCounter++] = instructionRegister;
+     memory[instructionCounter++] = instructionRegister;
      if(instructionRegister == EOC)
        break;
   }
@@ -91,16 +99,22 @@ int loadProgramIntoMemory() {
   return 1;
 }
 
-int executeInstruction() {
-  instructionRegister = code[instructionCounter];
+int decode(){
+  opCode = instructionRegister >> 12;
+  m = instructionRegister & 0x0800;
+  operand = instructionRegister & 0x07ff;
+  if (opCode == HALT) return 0;
+  return 1;
+}
+
+void execute() {
+  instructionRegister = memory[instructionCounter];
   //instruction_t.op_code = instructionRegister;
   //printf("%x\n\n",(nibble)instruction_t.op_code);
   // get 
-  opCode = instructionRegister >> 12;
-  m = (instructionRegister <<4)>>15;
+  decode();
   printf("m: %x\n",m);
   printf("OPCODE: %x\n",opCode);
-  operand = instructionRegister % 100000;
   printf("OP%x\n",operand);
   switch (opCode){
     case EOC:
@@ -108,6 +122,10 @@ int executeInstruction() {
       break;
     case LOAD:
       printf("%s\n","Load");
+      if(m)
+	accumulator = operand;
+      else
+	accumulator = memory[operand];
       break;
     case STORE:
       printf("%s\n","Load");
@@ -136,10 +154,8 @@ int executeInstruction() {
       break;
     case JZERO:
       break;
-    case HALT:
-      return 0;
     default: exit(EXIT_FAILURE);
   }
   instructionCounter++;
-  return 1;
+
 }
