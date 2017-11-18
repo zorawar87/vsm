@@ -22,11 +22,6 @@
 #define JZERO 0xe
 #define HALT 0xf
 
-bit field
-
-struct{
-bit_2:2
-}
 /*
 * Create aliases for relevant types
  */
