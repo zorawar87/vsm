@@ -36,7 +36,7 @@ typedef uint16_t word; // 16 bit integer
 /*
  * Declare registers
  */
-static word accumulator;
+static int16_t accumulator;
 static word instructionCounter;
 static word instructionRegister;
 static word opCode;
@@ -58,10 +58,11 @@ int decode();
 void execute();
 /* Helpers */
 word getRealOperand();
-int isValidDataAddress();
+int operandIsValidAddr();
+void error(char *);
 
 void main() {
-  if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
+  if (!loadProgramIntoMemory()) error ("Load Failure");
   int isExecutable = 0;
   do {
     fetch();
@@ -85,7 +86,7 @@ int loadProgramIntoMemory() {
     if (instructionRegister == EOC) break;
   }
   /* If only one instruction was loaded, exit */
-  if (instructionCounter < 4) return 0;
+  if (instructionCounter < 2) return 0;
 
   accumulator = 0;
   instructionCounter = 0;
@@ -96,48 +97,43 @@ int loadProgramIntoMemory() {
 }
 
 void fetch() {
-  printf ("fetching instruction %s", instructionCounter);
-  instructionRegister = memory[instructionCounter];
-  instructionCounter += 2;
-  // Plus two, instead of one, because of
-  // how the output is meant to be organised
+  //printf ("fetching instruction %d\n", instructionCounter);
+  instructionRegister = memory[instructionCounter++];
 }
 
 
 int decode() {
+  //printf ("decoding instruction %d\n", instructionCounter-2);
   opCode = instructionRegister >> 12;
   if (opCode == HALT || opCode == EOC) {
-    printf ("stopped decoding at %d\n", instructionCounter);
     return 0;
   }
   m = instructionRegister & 0x0800;
   //?? should isValidDataAddrCheck be done here?
   operand = instructionRegister & 0x07ff;
+  //printf ("\t\t operand: %d\n", operand);
   return 1;
 }
 
 void read() {
-  printf ("READING\n");
-  // checks if the operand is pointing to a valid place in memory
-  if (!isValidDataAddress()) return;
+  if (!operandIsValidAddr()) return;
   word input;
   if (scanf ("%04x", &input) != 1 ) return;
   memory[operand] = input;
-  printf ("\t\tmemory[%d]: %d\n", operand, memory[operand]);
 }
 
 void write() {
-  printf ("WRITIGN\n");
-  if (!isValidDataAddress()) return;
+  if (!operandIsValidAddr()) return;
   printf ("%d\n", memory[operand]);
 }
 
 void store() {
-  if (!isValidDataAddress()) return;
+  if (!operandIsValidAddr()) return;
   memory[operand] = accumulator;
 }
 
 void execute() {
+  printf("\t\t%d: accumulator: %d\n",instructionCounter, accumulator);
   switch (opCode) {
     case LOAD:
       accumulator = getRealOperand();
@@ -146,11 +142,9 @@ void execute() {
       store();
       break;
     case READ:
-      printf ("reading\n");
       read();
       break;
     case WRITE:
-      printf ("writing\n");
       write();
       break;
     case ADD:
@@ -163,9 +157,8 @@ void execute() {
       accumulator *= getRealOperand();
       break;
     case DIV:
-      word value = getRealOperand();
-      if (!word) {printf ("ERR:division by zero"); exit (EXIT_FAILURE);}
-      accumulator /= value;
+      if (!getRealOperand()) error ("division by zero");
+      accumulator /= getRealOperand();
       break;
     case MOD:
       accumulator %= getRealOperand();
@@ -177,28 +170,44 @@ void execute() {
       accumulator = accumulator;
       break;
     case JUMP:
+      printf("JUMP: ic was %d accum: %d\n",instructionCounter, accumulator);
       instructionCounter = operand;
+      printf("JUMP: ic xis %d\n",instructionCounter);
+      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
       break;
     case JNEG:
+      printf("JNEG: ic was %d a: %d\n",instructionCounter, accumulator);
       if (accumulator < 0) instructionCounter = operand;
+      printf("JNEG: ic xis %d\n",instructionCounter);
+      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
       break;
     case JZERO:
+      printf("JZER: ic was %d a: %d\n",instructionCounter, accumulator);
       if (accumulator == 0) instructionCounter = operand;
+      printf("JZER: ic xis %d\n",instructionCounter);
+      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
       break;
-    default: printf ("EXITING: unknown opcode %d\n", opCode); exit (EXIT_FAILURE);
+    default:
+      error("unknown opcode");
   }
+  printf("\t\taccumulator: %d\n",accumulator);
 }
 
 word getRealOperand() {
   // if operand is not a value (i.e. is an address),
   // try to fetch the value at the address
-  if (!m & isValidDataAddress())
+  if (!m & operandIsValidAddr())
     return memory[operand];
   return operand;
 }
 
-int isValidDataAddress() {
+int operandIsValidAddr() {
   // not a valid address if beyond 2038 or below 1024
-  if (operand < 1024 || operand > 2038) return 0;
+  if (operand < 1024 || operand > 2038) error("operand is invalid addr.");
   return 1;
+}
+
+void error(char *s){
+  printf("ERROR: %s\n",s);
+  exit(EXIT_FAILURE);
 }
