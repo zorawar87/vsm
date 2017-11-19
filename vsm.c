@@ -198,30 +198,31 @@ void coreDump(){
     printf("operand                   0x%04x\n", operand);
 
     printf("\nCODE:\n");
-    printf("    "); //padding for column number
+    printf("   "); //padding for column number
     for (j = 0; j < ncols; j++)
-        printf("%2d", j); // print column number
+        printf("%3d", j); // print column number
     printf("\n");
 
     for (i = 0; i < nrows; i++) {
-        printf("%04d ", i * 10);    //print memory precision to 10s place
+        printf("%04d ", i * 10); //print memory precision to 10s place
         for (j = 0; j < ncols/2; j++) {
             value= memory[i * ncols + j];
-            printf("%04x", value);
+            printf("%02x ", value >> 8);   // prints MSBs
+            printf("%02x ", value & 0xFF); // prints LSBs
         }
         printf("\n");
     }
 
     printf("\nDATA:\n");
-    printf("    ");
+    printf("   ");
     for (j = 0; j < ncols; j++)
-        printf("%2d", j);
+        printf("%3d", j);
     printf("\n");
     for (i = 0; i < nrows; i++) {
         printf("%04d ",1024+ i * 10);
-        for (j = 0; j < ncols/2; j++) {
+        for (j = 0; j < ncols; j++) {
             value= memory[1024+i * ncols + j];
-            printf("%04x", value);
+            printf("%02x ", value);
         }
         printf("\n");
     }
