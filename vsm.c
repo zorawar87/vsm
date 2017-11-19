@@ -221,7 +221,7 @@ void coreDump(){
         printf("%04d ",1024+ i * 10);
         for (j = 0; j < ncols/2; j++) {
             value= memory[1024+i * ncols + j];
-            printf("%02d", value);
+            printf("%04x", value);
         }
         printf("\n");
     }
