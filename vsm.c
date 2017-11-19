@@ -56,6 +56,7 @@ int loadProgramIntoMemory();
 void fetch();
 int decode();
 void execute();
+void coreDump();
 /* Helpers */
 word getRealOperand();
 int operandIsValidAddr();
@@ -69,6 +70,7 @@ void main() {
     isExecutable = decode();
     if (isExecutable) execute();
   } while (isExecutable);
+  coreDump();
 }
 
 /*
@@ -97,21 +99,17 @@ int loadProgramIntoMemory() {
 }
 
 void fetch() {
-  //printf ("fetching instruction %d\n", instructionCounter);
-  instructionRegister = memory[instructionCounter++];
+  instructionRegister = memory[instructionCounter];
 }
 
 
 int decode() {
-  //printf ("decoding instruction %d\n", instructionCounter-2);
   opCode = instructionRegister >> 12;
   if (opCode == HALT || opCode == EOC) {
     return 0;
   }
   m = instructionRegister & 0x0800;
-  //?? should isValidDataAddrCheck be done here?
   operand = instructionRegister & 0x07ff;
-  //printf ("\t\t operand: %d\n", operand);
   return 1;
 }
 
@@ -137,55 +135,68 @@ void execute() {
   switch (opCode) {
     case LOAD:
       accumulator = getRealOperand();
+      instructionCounter++;
       break;
     case STORE:
       store();
+      instructionCounter++;
       break;
     case READ:
+      instructionCounter++;
       read();
       break;
     case WRITE:
       write();
+      instructionCounter++;
       break;
     case ADD:
       accumulator += getRealOperand();
+      instructionCounter++;
       break;
     case SUB:
       accumulator -= getRealOperand();
+      instructionCounter++;
       break;
     case MUL:
       accumulator *= getRealOperand();
+      instructionCounter++;
       break;
     case DIV:
       if (!getRealOperand()) error ("division by zero");
       accumulator /= getRealOperand();
+      instructionCounter++;
       break;
     case MOD:
       accumulator %= getRealOperand();
+      instructionCounter++;
       break;
     case NEG:
       accumulator *= -1;
+      instructionCounter++;
       break;
     case NOP:
       accumulator = accumulator;
+      instructionCounter++;
       break;
     case JUMP:
       printf("JUMP: ic was %d accum: %d\n",instructionCounter, accumulator);
-      instructionCounter = operand;
+      instructionCounter = 2+(operand/2);
       printf("JUMP: ic xis %d\n",instructionCounter);
-      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
+      printf("opcode: %d\n",opCode);
       break;
     case JNEG:
       printf("JNEG: ic was %d a: %d\n",instructionCounter, accumulator);
-      if (accumulator < 0) instructionCounter = operand;
+      if (accumulator < 0) instructionCounter = 2+(operand/2);
+      else instructionCounter++;
       printf("JNEG: ic xis %d\n",instructionCounter);
-      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
+      printf("opcode: %d\n",opCode);
       break;
     case JZERO:
       printf("JZER: ic was %d a: %d\n",instructionCounter, accumulator);
-      if (accumulator == 0) instructionCounter = operand;
+      if (accumulator == 0) instructionCounter = 2+(operand/2);
+      else instructionCounter++;
       printf("JZER: ic xis %d\n",instructionCounter);
-      printf("%d=memory[%d]\n",memory[instructionCounter],instructionCounter);
+      printf("opcode: %d\n",opCode);
       break;
     default:
       error("unknown opcode");
@@ -193,6 +204,53 @@ void execute() {
   printf("\t\taccumulator: %d\n",accumulator);
 }
 
+void coreDump(){
+    int i, j;
+    int ncols = 10;
+    int nrows = 10;
+    word curval;
+
+    printf("REGISTERS:\n");
+    printf("accumulator               0x%04x\n", accumulator);
+    printf("instructionCounter        0x%04x\n", instructionCounter);
+    printf("instructionRegister       0x%04x\n", instructionRegister);
+    printf("operationCode             0x%1x \n", opCode);
+    printf("operand                   0x%04x\n", operand);
+
+    printf("\nCODE:\n");
+    printf("    ");
+    for (j = 0; j < ncols; j++)
+        printf("%2d", j); // print vertica
+    printf("\n");
+    for (i = 0; i < nrows; i++) {
+        printf("%04d ", i * 10);
+        for (j = 0; j < ncols/2; j++) {
+            curval = memory[i * ncols + j];
+            printf("%04x", curval);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("\nCODE:\n");
+    printf("    ");
+    for (j = 0; j < ncols; j++)
+        printf("%2d", j); // print vertica
+    printf("\n");
+    for (i = 0; i < nrows; i++) {
+        printf("%04d ",1024+ i * 10);
+        for (j = 0; j < ncols/2; j++) {
+            curval = memory[1024+i * ncols + j];
+            printf("%04x", curval);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+/* 
+ * HELPER METHODS
+ */
 word getRealOperand() {
   // if operand is not a value (i.e. is an address),
   // try to fetch the value at the address
@@ -209,5 +267,7 @@ int operandIsValidAddr() {
 
 void error(char *s){
   printf("ERROR: %s\n",s);
+  printf("Execution terminated abnormally. View core dump for more info:\n");
+  coreDump();
   exit(EXIT_FAILURE);
 }
