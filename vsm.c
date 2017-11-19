@@ -126,17 +126,17 @@ void execute() {
       instructionCounter++;
       break;
     case STORE:
-      if (!operandIsValidAddr()) return;
+      if (!m && !operandIsValidAddr()) return;
       memory[operand] = accumulator;
       instructionCounter++;
       break;
     case READ:
-      if (!operandIsValidAddr()) return;
+      if (!m && !operandIsValidAddr()) return;
       readFromStdin();
       instructionCounter++;
       break;
     case WRITE:
-      if (!operandIsValidAddr()) return;
+      if (!m && !operandIsValidAddr()) return;
       printf ("%d\n", memory[operand]);
       instructionCounter++;
       break;
@@ -239,7 +239,7 @@ void readFromStdin() {
 word getRealOperand() {
   // if operand is not a value (i.e. is an address),
   // try to fetch the value at the address
-  if (!m & operandIsValidAddr())
+  if (!m && operandIsValidAddr())
     return memory[operand];
   return operand;
 }
