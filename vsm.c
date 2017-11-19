@@ -58,6 +58,7 @@ int decode();
 void execute();
 void coreDump();
 /* Helpers */
+void readFromStdin();
 word getRealOperand();
 int operandIsValidAddr();
 void error(char *);
@@ -98,11 +99,17 @@ int loadProgramIntoMemory() {
   return 1;
 }
 
+/*
+ * Fetch an instruction
+ */
 void fetch() {
   instructionRegister = memory[instructionCounter];
 }
 
 
+/*
+ * Decode an instruction
+ */
 int decode() {
   opCode = instructionRegister >> 12;
   if (opCode == HALT || opCode <= EOC) return 0;
@@ -111,40 +118,26 @@ int decode() {
   return 1;
 }
 
-void read() {
-  if (!operandIsValidAddr()) return;
-  word input;
-  if (scanf ("%04x", &input) != 1 ) error("error reading");
-  memory[operand] = input;
-}
-
-void write() {
-  if (!operandIsValidAddr()) return;
-  printf ("%d\n", memory[operand]);
-}
-
-void store() {
-  if (!operandIsValidAddr()) return;
-  memory[operand] = accumulator;
-}
 
 void execute() {
-  printf("\t\t%d: accumulator: %d\n",instructionCounter, accumulator);
   switch (opCode) {
     case LOAD:
       accumulator = getRealOperand();
       instructionCounter++;
       break;
     case STORE:
-      store();
+      if (!operandIsValidAddr()) return;
+      memory[operand] = accumulator;
       instructionCounter++;
       break;
     case READ:
+      if (!operandIsValidAddr()) return;
+      readFromStdin();
       instructionCounter++;
-      read();
       break;
     case WRITE:
-      write();
+      if (!operandIsValidAddr()) return;
+      printf ("%d\n", memory[operand]);
       instructionCounter++;
       break;
     case ADD:
@@ -177,29 +170,19 @@ void execute() {
       instructionCounter++;
       break;
     case JUMP:
-      printf("JUMP: ic was %d accum: %d\n",instructionCounter, accumulator);
-      instructionCounter = 2+(operand/2);
-      printf("JUMP: ic xis %d\n",instructionCounter);
-      printf("opcode: %d\n",opCode);
+      instructionCounter = operand/2;
       break;
     case JNEG:
-      printf("JNEG: ic was %d a: %d\n",instructionCounter, accumulator);
-      if (accumulator < 0) instructionCounter = 2+(operand/2);
+      if (accumulator < 0) instructionCounter = operand/2;
       else instructionCounter++;
-      printf("JNEG: ic xis %d\n",instructionCounter);
-      printf("opcode: %d\n",opCode);
       break;
     case JZERO:
-      printf("JZER: ic was %d a: %d\n",instructionCounter, accumulator);
-      if (accumulator == 0) instructionCounter = 2+(operand/2);
+      if (accumulator == 0) instructionCounter = operand/2;
       else instructionCounter++;
-      printf("JZER: ic xis %d\n",instructionCounter);
-      printf("opcode: %d\n",opCode);
       break;
     default:
       error("unknown opcode");
   }
-  printf("\t\taccumulator: %d\n",accumulator);
 }
 
 void coreDump(){
@@ -207,7 +190,7 @@ void coreDump(){
     int ncols = 10, nrows =10;
     word value;
 
-    printf("REGISTERS:\n");
+    printf("\nREGISTERS:\n");
     printf("accumulator               0x%04x\n", accumulator);
     printf("instructionCounter        0x%04x\n", instructionCounter);
     printf("instructionRegister       0x%04x\n", instructionRegister);
@@ -228,7 +211,6 @@ void coreDump(){
         }
         printf("\n");
     }
-    printf("\n");
 
     printf("\nDATA:\n");
     printf("    ");
@@ -248,6 +230,12 @@ void coreDump(){
 /* 
  * HELPER METHODS
  */
+void readFromStdin() {
+  word input;
+  if (scanf ("%04x", &input) != 1 ) error("error reading");
+  memory[operand] = input;
+}
+
 word getRealOperand() {
   // if operand is not a value (i.e. is an address),
   // try to fetch the value at the address
