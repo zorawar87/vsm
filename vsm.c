@@ -206,9 +206,8 @@ void execute() {
 
 void coreDump(){
     int i, j;
-    int ncols = 10;
-    int nrows = 10;
-    word curval;
+    int ncols = 10, nrows =10;
+    word value;
 
     printf("REGISTERS:\n");
     printf("accumulator               0x%04x\n", accumulator);
@@ -218,34 +217,34 @@ void coreDump(){
     printf("operand                   0x%04x\n", operand);
 
     printf("\nCODE:\n");
-    printf("    ");
+    printf("    "); //padding for column number
     for (j = 0; j < ncols; j++)
-        printf("%2d", j); // print vertica
+        printf("%2d", j); // print column number
     printf("\n");
+
     for (i = 0; i < nrows; i++) {
-        printf("%04d ", i * 10);
+        printf("%04d ", i * 10);    //print memory precision to 10s place
         for (j = 0; j < ncols/2; j++) {
-            curval = memory[i * ncols + j];
-            printf("%04x", curval);
+            value= memory[i * ncols + j];
+            printf("%04x", value);
         }
         printf("\n");
     }
     printf("\n");
 
-    printf("\nCODE:\n");
+    printf("\nDATA:\n");
     printf("    ");
     for (j = 0; j < ncols; j++)
-        printf("%2d", j); // print vertica
+        printf("%2d", j);
     printf("\n");
     for (i = 0; i < nrows; i++) {
         printf("%04d ",1024+ i * 10);
         for (j = 0; j < ncols/2; j++) {
-            curval = memory[1024+i * ncols + j];
-            printf("%04x", curval);
+            value= memory[1024+i * ncols + j];
+            printf("%04x", value);
         }
         printf("\n");
     }
-    printf("\n");
 }
 
 /* 
