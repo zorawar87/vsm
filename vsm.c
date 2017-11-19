@@ -105,9 +105,7 @@ void fetch() {
 
 int decode() {
   opCode = instructionRegister >> 12;
-  if (opCode == HALT || opCode == EOC) {
-    return 0;
-  }
+  if (opCode == HALT || opCode <= EOC) return 0;
   m = instructionRegister & 0x0800;
   operand = instructionRegister & 0x07ff;
   return 1;
@@ -116,7 +114,7 @@ int decode() {
 void read() {
   if (!operandIsValidAddr()) return;
   word input;
-  if (scanf ("%04x", &input) != 1 ) return;
+  if (scanf ("%04x", &input) != 1 ) error("error reading");
   memory[operand] = input;
 }
 
