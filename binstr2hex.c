@@ -3,9 +3,7 @@
 
 void main() {
   char *bits = (char*)malloc (16 * sizeof (char));
-  char *line = (char*)malloc (100 * sizeof (char));
-  while (scanf ("%s", line) != EOF) {
-    sscanf(line, "%16s", bits);
+  while (scanf("%16s", bits)!=EOF) {
     int total = 0;
     while (*bits) {
       total <<= 1;
