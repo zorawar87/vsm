@@ -1,3 +1,8 @@
+/*
+ * vsm.c: simulates a very simple machine.
+ * Authors: James Rodiger'19 && Zorawar Moolenaar'20
+ * Submission Date: 2017.11.19
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -29,7 +34,7 @@ typedef uint8_t  byte; // 08 bit integer
 typedef uint16_t word; // 16 bit integer
 
 /*
- * Initialise registers
+ * Declare registers
  */
 static word accumulator;
 static word instructionCounter;
@@ -57,7 +62,7 @@ int isValidDataAddress();
 
 void main() {
   if (!loadProgramIntoMemory()) exit (EXIT_FAILURE);
-  int isExecutable=0;
+  int isExecutable = 0;
   do {
     fetch();
     isExecutable = decode();
@@ -80,7 +85,7 @@ int loadProgramIntoMemory() {
     if (instructionRegister == EOC) break;
   }
   /* If only one instruction was loaded, exit */
-  if (instructionCounter<2) return 0;
+  if (instructionCounter < 4) return 0;
 
   accumulator = 0;
   instructionCounter = 0;
@@ -91,38 +96,44 @@ int loadProgramIntoMemory() {
 }
 
 void fetch() {
+  printf ("fetching instruction %s", instructionCounter);
   instructionRegister = memory[instructionCounter];
-  instructionCounter +=2;
+  instructionCounter += 2;
+  // Plus two, instead of one, because of
+  // how the output is meant to be organised
 }
 
 
 int decode() {
   opCode = instructionRegister >> 12;
   if (opCode == HALT || opCode == EOC) {
-    printf("stopped decoding at %d\n", instructionCounter);
+    printf ("stopped decoding at %d\n", instructionCounter);
     return 0;
   }
   m = instructionRegister & 0x0800;
+  //?? should isValidDataAddrCheck be done here?
   operand = instructionRegister & 0x07ff;
   return 1;
 }
 
-void read(){
-  if (!isValidDataAddress(operand)) return;
+void read() {
+  printf ("READING\n");
+  // checks if the operand is pointing to a valid place in memory
+  if (!isValidDataAddress()) return;
   word input;
-  if (scanf ("%04x", &input) !=1 ) return;
+  if (scanf ("%04x", &input) != 1 ) return;
   memory[operand] = input;
-  printf("\t\tmemory[%d]: %d\n", operand, memory[operand]);
+  printf ("\t\tmemory[%d]: %d\n", operand, memory[operand]);
 }
 
-void write(){
-  printf("WRITIGN\n");
-  if (!isValidDataAddress(operand)) return;
-  printf("%d\n", memory[operand]);
+void write() {
+  printf ("WRITIGN\n");
+  if (!isValidDataAddress()) return;
+  printf ("%d\n", memory[operand]);
 }
 
-void store(){
-  if (!isValidDataAddress(operand)) return;
+void store() {
+  if (!isValidDataAddress()) return;
   memory[operand] = accumulator;
 }
 
@@ -135,9 +146,11 @@ void execute() {
       store();
       break;
     case READ:
+      printf ("reading\n");
       read();
       break;
     case WRITE:
+      printf ("writing\n");
       write();
       break;
     case ADD:
@@ -150,7 +163,9 @@ void execute() {
       accumulator *= getRealOperand();
       break;
     case DIV:
-      accumulator /= getRealOperand();
+      word value = getRealOperand();
+      if (!word) {printf ("ERR:division by zero"); exit (EXIT_FAILURE);}
+      accumulator /= value;
       break;
     case MOD:
       accumulator %= getRealOperand();
@@ -170,21 +185,19 @@ void execute() {
     case JZERO:
       if (accumulator == 0) instructionCounter = operand;
       break;
-    default: printf("EXITING: unknown opcode %d\n",opCode);exit (EXIT_FAILURE);
+    default: printf ("EXITING: unknown opcode %d\n", opCode); exit (EXIT_FAILURE);
   }
 }
 
-word getRealOperand(){
+word getRealOperand() {
   // if operand is not a value (i.e. is an address),
   // try to fetch the value at the address
-  if (!m) {
-    if (!isValidDataAddress(operand)) return;
+  if (!m & isValidDataAddress())
     return memory[operand];
-  }
   return operand;
 }
 
-int isValidDataAddress(){
+int isValidDataAddress() {
   // not a valid address if beyond 2038 or below 1024
   if (operand < 1024 || operand > 2038) return 0;
   return 1;
