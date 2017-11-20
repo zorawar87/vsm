@@ -4,8 +4,8 @@
 void main() {
   char *bits = (char*)malloc (16 * sizeof (char));
   char comments[BUFSIZ] = {0};
-  while (scanf("%16s", bits)!=EOF) {
-    fgets(comments, BUFSIZ, stdin);
+  while (scanf ("%16s", bits) != EOF) {
+    fgets (comments, BUFSIZ, stdin);
     int total = 0;
     while (*bits) {
       total <<= 1;
