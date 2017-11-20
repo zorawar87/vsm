@@ -1,4 +1,6 @@
 # VSM: Very Simple Machine (VSM) #
+Implemented by Zorawar Moolenaar'20 && James Rodiger'19
+
 ## Introduction ##
 A very simple machine that uses RISC instruction set, and supports VSML (VSM language) with comments :)
 
@@ -30,7 +32,7 @@ op-code | Mnemonic  | Description
 `1011`  | `NOP`     | No operation (sets accumulator to value of accumulator)
 `1100`  | `JUMP`    | Branch to a specific location in memory.
 `1101`  | `JNEG`    | Branch to a specific location in memory if the accumulator is negative.
-`1101`  | `JZERO`   | Branch to a specific location in memory if the accumulator is zero
+`1110`  | `JZERO`   | Branch to a specific location in memory if the accumulator is zero
 `1111`  | `HALT`    | The program is terminated.
 
 ### VSM Memory Layout ###
