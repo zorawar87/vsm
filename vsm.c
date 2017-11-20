@@ -103,7 +103,7 @@ int loadProgramIntoMemory() {
   if (instructionCounter < 2) return 0;
 
   accumulator = 0;
-  instructionCounter = 0;
+ instructionCounter = 0;
   instructionRegister = 0;
   opCode = 0;
   operand = 0;
@@ -127,7 +127,6 @@ void fetch() {
  */
 int decode() {
   opCode = instructionRegister >> 12;
-  printf("opCode: %x",opCode);
   if (opCode == HALT || opCode <= EOC) return 0;
   m = instructionRegister & 0x0800;
   operand = instructionRegister & 0x07ff;
@@ -141,9 +140,6 @@ int decode() {
  * Note: Exits in case of unexpected attempted execution
  */
 void execute() {
-  int i = 0;
-  i++;
-  printf("\n%d\n",i);
   switch (opCode) {
     case LOAD:
       accumulator = getRealOperand();
@@ -155,8 +151,8 @@ void execute() {
       break;
     case READ:
       //exit if operand is outside the data region
-      if (!m && !operandIsValidAddr())
-	readFromStdin();
+      if (!m && !operandIsValidAddr());
+      readFromStdin();
       break;
     case WRITE:
       //exit if operand is outside the data region
