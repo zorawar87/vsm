@@ -59,5 +59,5 @@ op-code | Mnemonic  | Description
     * An address in the code section (valid for `/JXXXX?/`, but not enforced)
 
 # Note #
-VSM is obviously insecure. Jumps are unchecked. The entire memory is virtually executable.
-It, however, does account for a subset of issues.
+* VSM is obviously insecure. Jumps are unchecked. The entire memory is virtually executable.
+* For more details, see `spec.pdf`
