@@ -1,6 +1,10 @@
 # VSM: Very Simple Machine (VSM) #
 Implemented by Zorawar Moolenaar'20 && James Rodiger'19
 
+> "Code *is* Documentation" -- Matin Fowler
+
+Going through the code might make more sense. :D
+
 ## Introduction ##
 A very simple machine that uses RISC instruction set, and supports VSML (VSM language) with comments :)
 
